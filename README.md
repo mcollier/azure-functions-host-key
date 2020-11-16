@@ -5,7 +5,7 @@
 - Deploy an Azure Function using the included ARM template.
 - Observe the Azure Functions host key as an ARM template output value, **functionHostKey**
 - Observe the Azure Functions host key shown in the Azure portal.
-- The key shown in the portal is different than the key in any of the previously saved settings (Key Vault, application setting, template output).
+- The key shown in the portal is different than the key shown in the template output.
 
 ## Environment
 
