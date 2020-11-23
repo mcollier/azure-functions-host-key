@@ -31,19 +31,19 @@
             "apiVersion": "2019-09-01",
             "name": "[variables('keyVaultName')]",
             "location": "[parameters('location')]",
-            "dependsOn":[
+            "dependsOn": [
                 "[resourceId('Microsoft.Web/sites',variables('functionAppName'))]"
             ],
             "properties": {
                 "enabledForDeployment": "true",
                 "enabledForDiskEncryption": "false",
                 "enabledForTemplateDeployment": "false",
-                "enableSoftDelete":"false",
+                "enableSoftDelete": "false",
                 "tenantId": "[subscription().tenantId]",
                 "accessPolicies": [
-                     {
-                        "tenantId":"[reference(resourceId('Microsoft.Web/sites', variables('functionAppName')), '2018-02-01', 'Full').identity.tenantId]",
-                        "objectId":"[reference(resourceId('Microsoft.Web/sites', variables('functionAppName')), '2018-02-01', 'Full').identity.principalId]",
+                    {
+                        "tenantId": "[reference(resourceId('Microsoft.Web/sites', variables('functionAppName')), '2018-02-01', 'Full').identity.tenantId]",
+                        "objectId": "[reference(resourceId('Microsoft.Web/sites', variables('functionAppName')), '2018-02-01', 'Full').identity.principalId]",
                         "permissions": {
                             "secrets": [ "get" ]
                         }
@@ -126,7 +126,10 @@
             "name": "[variables('functionAppName')]",
             "location": "[parameters('location')]",
             "dependsOn": [
-                "[resourceId('Microsoft.Web/serverfarms', variables('appServicePlanName'))]"
+                //"[resourceId('Microsoft.Web/serverfarms', variables('appServicePlanName'))]"
+                //"[resourceId('Microsoft.Storage/storageAccounts',variables('storageAccountName'))]"
+                //"[resourceId('Microsoft.Insights/components', variables('appInsightsName'))]"
+
             ],
             "kind": "functionapp",
             "identity": {
@@ -134,34 +137,62 @@
             },
             "properties": {
                 "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('appServicePlanName'))]",
-                "httpsOnly": true
+                "httpsOnly": true,
+                "siteConfig": {
+                    "appSettings": [
+                        {
+                            // "AzureWebJobsStorage": "[concat('DefaultEndpointsProtocol=https;AccountName=',variables('storageAccountName'), ';AccountKey=',listkeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName')), '2019-06-01').keys[0].value, ';EndpointSuffix=', environment().suffixes.storage)]",
+                            // "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING": "[concat('DefaultEndpointsProtocol=https;AccountName=',variables('storageAccountName'), ';AccountKey=',listkeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName')), '2019-06-01').keys[0].value, ';EndpointSuffix=', environment().suffixes.storage)]",
+                            //"WEBSITE_CONTENTSHARE": "[variables('functionAppName')]",
+                            //"FUNCTIONS_EXTENSION_VERSION": "~3"
+                            //"FUNCTIONS_WORKER_RUNTIME": "dotnet"
+                            // "APPINSIGHTS_INSTRUMENTATIONKEY": "[reference(resourceId('Microsoft.Insights/components', variables('appInsightsName')), '2018-05-01-preview').instrumentationKey]",
+                            //"WEBSITE_RUN_FROM_PACKAGE": "1"
+                        }
+                    ]
+                }
             },
-            "resources": []
-        },
-        {
-            "type": "Microsoft.Web/sites/config",
-            "apiVersion": "2020-06-01",
-            "name": "[concat(variables('functionAppName'), '/appsettings')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Web/sites', variables('functionAppName'))]",
-                "[resourceId('Microsoft.KeyVault/vaults/secrets', variables('keyVaultName'),'functionKey')]"
-            ],
-            "properties": {
-                "AzureWebJobsStorage": "[concat('DefaultEndpointsProtocol=https;AccountName=',variables('storageAccountName'), ';AccountKey=',listkeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName')), '2019-06-01').keys[0].value, ';EndpointSuffix=', environment().suffixes.storage)]",
-                "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING": "[concat('DefaultEndpointsProtocol=https;AccountName=',variables('storageAccountName'), ';AccountKey=',listkeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName')), '2019-06-01').keys[0].value, ';EndpointSuffix=', environment().suffixes.storage)]",
-                "WEBSITE_CONTENTSHARE": "[variables('functionAppName')]",
-                "FUNCTIONS_EXTENSION_VERSION": "~3",
-                "FUNCTIONS_WORKER_RUNTIME": "dotnet",
-                "APPINSIGHTS_INSTRUMENTATIONKEY": "[reference(resourceId('Microsoft.Insights/components', variables('appInsightsName')), '2018-05-01-preview').instrumentationKey]",
-                "WEBSITE_RUN_FROM_PACKAGE": "1",
-                "MyFunctionHostKey":"[concat('@Microsoft.KeyVault(SecretUri=', reference(resourceId('Microsoft.KeyVault/vaults/secrets', variables('keyVaultName'), 'functionKey')).secretUriWithVersion, ')')]"
-            }
+            "resources": [
+                {
+                    "type": "config",
+                    "name": "appsettings",
+                    "apiVersion": "2020-06-01",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Web/sites', variables('functionAppName'))]",
+                        "[resourceId('Microsoft.KeyVault/vaults/', variables('keyVaultName'))]",
+                        "[resourceId('Microsoft.KeyVault/vaults/secrets', variables('keyVaultName'),'functionKey')]"
+                    ],
+                    "properties": {
+                        "AzureWebJobsStorage": "[concat('DefaultEndpointsProtocol=https;AccountName=',variables('storageAccountName'), ';AccountKey=',listkeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName')), '2019-06-01').keys[0].value, ';EndpointSuffix=', environment().suffixes.storage)]",
+                        "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING": "[concat('DefaultEndpointsProtocol=https;AccountName=',variables('storageAccountName'), ';AccountKey=',listkeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName')), '2019-06-01').keys[0].value, ';EndpointSuffix=', environment().suffixes.storage)]",
+                        "WEBSITE_CONTENTSHARE": "[variables('functionAppName')]",
+                        "FUNCTIONS_EXTENSION_VERSION": "~3",
+                        "FUNCTIONS_WORKER_RUNTIME": "dotnet",
+                        "APPINSIGHTS_INSTRUMENTATIONKEY": "[reference(resourceId('Microsoft.Insights/components', variables('appInsightsName')), '2018-05-01-preview').instrumentationKey]",
+                        "WEBSITE_RUN_FROM_PACKAGE": "1",
+                        "MyFunctionHostKey": "[concat('@Microsoft.KeyVault(SecretUri=', reference(resourceId('Microsoft.KeyVault/vaults/secrets', variables('keyVaultName'), 'functionKey')).secretUriWithVersion, ')')]"
+                    }
+                }
+            ]
         }
-    ],
-    "outputs": {
-        "functionHostKey": {
-            "type": "string",
-            "value": "[listKeys(concat(resourceId('Microsoft.Web/sites', variables('functionAppName')), '/host/default'), '2016-08-01').functionKeys.default]"
-        }
-    }
+        // {
+        //     "type": "Microsoft.Web/sites/config",
+        //     "apiVersion": "2020-06-01",
+        //     "name": "[concat(variables('functionAppName'), '/appsettings')]",
+        //     "dependsOn": [
+        //         "[resourceId('Microsoft.Web/sites', variables('functionAppName'))]",
+        //         "[resourceId('Microsoft.KeyVault/vaults/secrets', variables('keyVaultName'),'functionKey')]"
+        //     ],
+        //     "properties": {
+        //         "AzureWebJobsStorage": "[concat('DefaultEndpointsProtocol=https;AccountName=',variables('storageAccountName'), ';AccountKey=',listkeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName')), '2019-06-01').keys[0].value, ';EndpointSuffix=', environment().suffixes.storage)]",
+        //         "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING": "[concat('DefaultEndpointsProtocol=https;AccountName=',variables('storageAccountName'), ';AccountKey=',listkeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName')), '2019-06-01').keys[0].value, ';EndpointSuffix=', environment().suffixes.storage)]",
+        //         "WEBSITE_CONTENTSHARE": "[variables('functionAppName')]",
+        //         "FUNCTIONS_EXTENSION_VERSION": "~3",
+        //         "FUNCTIONS_WORKER_RUNTIME": "dotnet",
+        //         "APPINSIGHTS_INSTRUMENTATIONKEY": "[reference(resourceId('Microsoft.Insights/components', variables('appInsightsName')), '2018-05-01-preview').instrumentationKey]",
+        //         "WEBSITE_RUN_FROM_PACKAGE": "1",
+        //         "MyFunctionHostKey": "[concat('@Microsoft.KeyVault(SecretUri=', reference(resourceId('Microsoft.KeyVault/vaults/secrets', variables('keyVaultName'), 'functionKey')).secretUriWithVersion, ')')]"
+        //     }
+        // }
+    ]
 }
