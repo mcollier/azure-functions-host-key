@@ -3,13 +3,12 @@
 ## Scenario
 
 - Deploy an Azure Function using the included ARM template.
-- Observe the Azure Functions host key as an ARM template output value, **functionHostKey**
-- Observe the Azure Functions host key shown in the Azure portal.
-- The key shown in the portal is different than the key shown in the template output.
+- Set the Azure Function runtime version during app resource creation.
+- Set the application settings when creating the function app and also when setting Key Vault references app settings.
 
 ## Environment
 
-- Azure CLI: 2.14.2
+- Azure CLI: 2.15.1
 - Azure Function Core Tools: 3.0.2996
 - Azure Functions hosting plan: Consumption
 - Azure Functions OS: Windows
