@@ -157,11 +157,5 @@
                 "MyFunctionHostKey":"[concat('@Microsoft.KeyVault(SecretUri=', reference(resourceId('Microsoft.KeyVault/vaults/secrets', variables('keyVaultName'), 'functionKey')).secretUriWithVersion, ')')]"
             }
         }
-    ],
-    "outputs": {
-        "functionHostKey": {
-            "type": "string",
-            "value": "[listKeys(concat(resourceId('Microsoft.Web/sites', variables('functionAppName')), '/host/default'), '2016-08-01').functionKeys.default]"
-        }
-    }
+    ]
 }
